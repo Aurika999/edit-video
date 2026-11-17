@@ -11,13 +11,14 @@ header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; back
 header h1 { font-size: 22px; margin: 0; font-family: Impact, "Arial Black", sans-serif; letter-spacing: 2px; color: var(--accent); font-weight: normal; }
 header .sp { flex: 1; }
 
-button, .filebtn {
+button, .filebtn, a.button {
   background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px;
   padding: 8px 12px; font: inherit; font-size: 14px; cursor: pointer; text-align: center;
 }
 .filebtn { display: block; margin-top: 10px; }
+a.button { display: block; text-decoration: none; }
 button:hover:not(:disabled), .filebtn:hover { border-color: var(--accent); }
-button.primary { background: var(--red); border-color: var(--red); font-weight: 600; }
+button.primary, a.button.primary { background: var(--red); border-color: var(--red); font-weight: 600; }
 button:disabled { opacity: .45; cursor: default; }
 
 main { flex: 1; display: grid; grid-template-columns: 300px 1fr 290px; min-height: 0; }
@@ -78,6 +79,7 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .hint { font-size: 12px; color: var(--muted); line-height: 1.5; }
 .btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .btns > * { flex: 1; margin-top: 0; }
+.btns.col { flex-direction: column; }
 a.dl { color: var(--accent); }
 
 .overlay-msg { position: fixed; inset: 0; background: rgba(0, 0, 0, .55); display: flex; align-items: center; justify-content: center; z-index: 10; }
@@ -91,15 +93,43 @@ a.dl { color: var(--accent); }
   .emojis { grid-template-columns: repeat(5, 1fr); }
 }
 @media (max-width: 860px) {
+  /* Telefon / tableta in picioare: video-ul sta fix sus, uneltele se deruleaza dedesubt. */
   html, body, #root { height: auto; min-height: 100%; }
+  .app { height: auto; }
   main { display: flex; flex-direction: column; }
-  .center { order: -1; }
-  .stage { height: 56vh; }
-  aside.left, aside.right { border: 0; border-top: 1px solid var(--line); }
+  .center { order: 0; position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .stage { height: 38vh; height: 38svh; padding: 6px; }
+  .drop { inset: 6px; gap: 8px; padding: 10px; }
+  .drop .big { font-size: 40px; }
+  .controls { padding: 8px 10px; }
+  .ctrlrow { gap: 8px; }
+  .ctrlrow button { min-width: 0; padding: 8px 10px; }
+  .time { min-width: 0; flex: none; font-size: 12px; white-space: nowrap; }
+  .ctrlrow input[type=range] { flex: 1; min-width: 0; }
+  .controls .tracks { max-height: 84px; }
+  .bar { height: 28px; }
+  .bar span { line-height: 28px; }
+  aside.right { order: 1; }
+  aside.left { order: 2; }
+  aside.right.empty { display: none; }
+  aside.left, aside.right { border: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .tabs { grid-template-columns: repeat(4, 1fr); }
+  .tabs button { font-size: 12px; padding: 9px 2px; }
   .emojis { grid-template-columns: repeat(8, 1fr); }
+  .emojis button { font-size: 24px; padding: 6px 0; }
   .stickers { grid-template-columns: repeat(3, 1fr); }
-  header { flex-wrap: wrap; }
-  header h1 { font-size: 18px; }
+  header { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+  header h1 { font-size: 17px; width: 100%; }
+  header .sp { display: none; }
+  header > button { flex: 1; }
+  header .hint { order: 5; width: 100%; }
+  /* butoane mai mari pentru degete; 16px ca iPhone-ul sa nu faca zoom la scris */
+  button, .filebtn, a.button { min-height: 40px; }
+  input[type=text], input[type=number], select { font-size: 16px; }
+  .overlay-msg .box { margin: 12px; padding: 18px; }
+}
+@media (hover: none) {
+  .kbd-only { display: none; }
 }
 
 /* Muzica online */

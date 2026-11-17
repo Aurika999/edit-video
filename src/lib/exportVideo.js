@@ -34,7 +34,15 @@ export async function exportVideo({ canvas, video, engine, onProgress, control }
   if (!mime) throw new Error('Browserul nu poate salva video. Folosește Google Chrome sau Microsoft Edge.');
   engine.ensure();
 
+  // Pe iPhone video-ul poate porni doar in urma unei atingeri: il "deblocam" acum,
+  // cat inca suntem in clic-ul de pe butonul Salveaza.
+  video.play()?.catch(() => {});
   video.pause();
+
+  // Telefonul sa nu stinga ecranul in timpul salvarii (altfel se opreste inregistrarea).
+  let wake = null;
+  try { wake = await navigator.wakeLock?.request('screen'); } catch { /* nu e obligatoriu */ }
+
   video.currentTime = 0;
   await once(video, 'seeked');
 
@@ -64,6 +72,7 @@ export async function exportVideo({ canvas, video, engine, onProgress, control }
     await stopped;
     stream.getVideoTracks().forEach((t) => t.stop());
     engine.setMonitor(true);
+    wake?.release().catch(() => {});
   }
   if (control.cancelled) return null;
 
@@ -72,6 +81,27 @@ export async function exportVideo({ canvas, video, engine, onProgress, control }
   const blob = await fixDuration(raw, t0 && t1 > t0 ? (t1 - t0) / 1000 : video.duration);
   return { blob, name: `navzar-${stamp()}.${ext}` };
 }
+
+/** Se poate trimite fisierul prin meniul de distribuire al telefonului (Galerie, WhatsApp...)? */
+export function canShareFile(blob, name) {
+  try {
+    return !!navigator.canShare?.({ files: [new File([blob], name, { type: blob.type })] });
+  } catch {
+    return false;
+  }
+}
+
+export async function shareFile(blob, name) {
+  const file = new File([blob], name, { type: blob.type });
+  try {
+    await navigator.share({ files: [file], title: name });
+  } catch (e) {
+    if (e.name !== 'AbortError') throw e; // AbortError = ai inchis meniul
+  }
+}
+
+/** Pe telefon/tableta descarcarea automata e des blocata, asa ca acolo aratam butoane. */
+export const isTouchDevice = () => matchMedia('(pointer: coarse)').matches;
 
 export function downloadBlob(blob, name) {
   const url = URL.createObjectURL(blob);

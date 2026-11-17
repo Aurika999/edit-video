@@ -118,9 +118,10 @@ export function toLocal(o, p, W, H) {
   return { x: dx * Math.cos(a) - dy * Math.sin(a), y: dx * Math.sin(a) + dy * Math.cos(a) };
 }
 
-export function hitHandle(ctx, o, p, W, H) {
+// tol = toleranta minima in pixeli de canvas (pe telefon degetul e mai gros decat mouse-ul).
+export function hitHandle(ctx, o, p, W, H, tol = 0) {
   const { w, h } = measure(ctx, o, H);
-  const pad = selectionPad(H), hs = handleSize(H), l = toLocal(o, p, W, H);
+  const pad = selectionPad(H), hs = Math.max(handleSize(H), tol), l = toLocal(o, p, W, H);
   return Math.abs(l.x - (w / 2 + pad)) < hs && Math.abs(l.y - (h / 2 + pad)) < hs;
 }
 

@@ -65,8 +65,9 @@ export default function ToolPanel(props) {
       <p className="hint">
         1. Deschide un video.<br />
         2. Mergi la momentul dorit și adaugă emoji, sticker, text sau muzică.<br />
-        3. Trage elementele cu mouse-ul. Colțul galben le mărește, la fel și rotița mouse-ului.<br />
-        4. Din dreapta alegi cât timp apar și animația.<br />
+        3. Trage elementele cu degetul sau cu mouse-ul. Colțul galben le mărește.
+        Pe telefon le mărești și le rotești cu două degete; pe calculator, cu rotița mouse-ului.<br />
+        4. La „Element selectat” alegi cât timp apar și animația.<br />
         5. Apasă <b>Salvează video</b>.
       </p>
     </aside>

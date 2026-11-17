@@ -4,11 +4,11 @@ import ToolPanel from './components/ToolPanel';
 import Stage from './components/Stage';
 import Timeline from './components/Timeline';
 import Inspector from './components/Inspector';
-import ExportDialog from './components/ExportDialog';
+import ExportDialog, { DoneDialog } from './components/ExportDialog';
 import { BUILTIN_STICKERS } from './lib/stickers';
 import { AudioEngine, syncMusic } from './lib/audio';
 import { loadImage, renderFrame } from './lib/render';
-import { downloadBlob, exportVideo } from './lib/exportVideo';
+import { canShareFile, downloadBlob, exportVideo, isTouchDevice, shareFile } from './lib/exportVideo';
 import { isAudioFile, isImageFile, isVideoFile } from './lib/format';
 import { MAX_SIZE } from './lib/constants';
 import './App.css';
@@ -31,7 +31,8 @@ export default function App() {
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [exporting, setExporting] = useState(null); // { progress, control }
-  const [lastExport, setLastExport] = useState(null);
+  const [lastExport, setLastExport] = useState(null); // { url, name, size, type, blob }
+  const [showDone, setShowDone] = useState(false);
 
   const duration = videoInfo?.duration || 10;
   const selected = overlays.find((o) => o.id === selectedId) ?? null;
@@ -62,6 +63,15 @@ export default function App() {
     const evs = ['play', 'pause', 'ended'];
     evs.forEach((e) => video.addEventListener(e, on));
     return () => evs.forEach((e) => video.removeEventListener(e, on));
+  }, [video]);
+
+  // Pe iPhone, un video care nu e in pagina uneori nu-si mai arata cadrele pe canvas.
+  // Il punem in pagina, dar invizibil.
+  useEffect(() => {
+    Object.assign(video.style, { position: 'fixed', left: 0, top: 0, width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' });
+    video.setAttribute('playsinline', '');
+    document.body.appendChild(video);
+    return () => video.remove();
   }, [video]);
 
   useEffect(() => engine.setVideoVolume(videoVolume), [engine, videoVolume]);
@@ -196,8 +206,10 @@ export default function App() {
       });
       if (res) {
         if (lastExport) URL.revokeObjectURL(lastExport.url);
-        const url = downloadBlob(res.blob, res.name);
-        setLastExport({ url, name: res.name, size: res.blob.size, type: res.blob.type });
+        // Pe calculator se descarca singur; pe telefon aratam butoane (descarcarea automata e blocata acolo).
+        const url = isTouchDevice() ? URL.createObjectURL(res.blob) : downloadBlob(res.blob, res.name);
+        setLastExport({ url, name: res.name, size: res.blob.size, type: res.blob.type, blob: res.blob });
+        setShowDone(true);
       }
     } catch (e) {
       alert('Salvarea nu a reușit: ' + e.message);
@@ -270,6 +282,14 @@ export default function App() {
           onDuplicate={duplicateOverlay}
         />
       </main>
+      {showDone && lastExport && !exporting && (
+        <DoneDialog
+          result={lastExport}
+          canShare={canShareFile(lastExport.blob, lastExport.name)}
+          onShare={() => shareFile(lastExport.blob, lastExport.name).catch((e) => alert('Nu am putut trimite: ' + e.message))}
+          onClose={() => setShowDone(false)}
+        />
+      )}
       {exporting && <ExportDialog progress={exporting.progress} onCancel={() => exporting.control.cancel?.()} />}
     </div>
   );

@@ -6,7 +6,7 @@ const TITLES = { image: '🖼️ Sticker', emoji: 'Emoji', text: '🔤 Text' };
 export default function Inspector({ overlay: o, time, duration, onUpdate, onRemove, onDuplicate }) {
   if (!o) {
     return (
-      <aside className="right">
+      <aside className="right empty">
         <h2>Element selectat</h2>
         <p className="hint">Apasă pe un emoji, sticker sau text din video ca să-l modifici.</p>
       </aside>
@@ -37,7 +37,7 @@ export default function Inspector({ overlay: o, time, duration, onUpdate, onRemo
       <div className="row"><label>Mărime</label>
         <input type="range" min="2" max="100" value={Math.round(o.size * 100)} onChange={(e) => up({ size: e.target.value / 100 })} /></div>
       <div className="row"><label>Rotire</label>
-        <input type="range" min="-45" max="45" value={o.rot} onChange={(e) => up({ rot: +e.target.value })} /></div>
+        <input type="range" min="-180" max="180" value={o.rot} onChange={(e) => up({ rot: +e.target.value })} /></div>
 
       <div className="row"><label>Apare la</label>
         <input type="number" min="0" step="0.1" key={`s-${o.id}-${o.start}`} defaultValue={o.start.toFixed(1)}
@@ -61,7 +61,7 @@ export default function Inspector({ overlay: o, time, duration, onUpdate, onRemo
         <button onClick={() => onDuplicate(o.id)}>📄 Duplică</button>
         <button onClick={() => onRemove(o.id)}>🗑️ Șterge</button>
       </div>
-      <p className="hint" style={{ marginTop: 14 }}>
+      <p className="hint kbd-only" style={{ marginTop: 14 }}>
         Sfat: <b>Delete</b> șterge elementul, <b>Spațiu</b> pornește/oprește video-ul, săgețile mută timpul (cu Shift câte o secundă).
       </p>
     </aside>

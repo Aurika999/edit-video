@@ -15,3 +15,27 @@ export default function ExportDialog({ progress, onCancel }) {
     </div>
   );
 }
+
+/** Dupa salvare: butoane de descarcare si (pe telefon) de trimitere / salvare in Galerie. */
+export function DoneDialog({ result, canShare, onShare, onClose }) {
+  const mb = (result.size / 1048576).toFixed(1);
+  return (
+    <div className="overlay-msg">
+      <div className="box">
+        <h3>✅ Video-ul e gata!</h3>
+        <p className="hint">{result.name} ({mb} MB)</p>
+        <div className="btns col">
+          <a className="button primary" href={result.url} download={result.name}>⬇️ Descarcă</a>
+          {canShare && <button onClick={onShare}>📤 Salvează în Galerie / Trimite</button>}
+          <button onClick={onClose}>Închide</button>
+        </div>
+        {canShare && (
+          <p className="hint">
+            Pe iPhone: apasă „Salvează în Galerie / Trimite”, apoi alege <b>Salvează video</b>.<br />
+            Pe Android: „Descarcă” îl pune în Descărcări; de acolo apare și în Galerie.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
