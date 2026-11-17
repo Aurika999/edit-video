@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor video NAVZAR</title>
+<style>
+:root{--bg:#0f1720;--panel:#18222e;--panel2:#223040;--line:#2f3f52;--text:#e8eef5;--muted:#93a4b8;--accent:#ffd600;--red:#e53935}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:22px;margin:0;font-family:Impact,"Arial Black",sans-serif;letter-spacing:2px;color:var(--accent);font-weight:normal}
+header .sp{flex:1}
+button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:inherit;font-size:14px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.primary{background:var(--red);border-color:var(--red);font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+main{flex:1;display:grid;grid-template-columns:290px 1fr 290px;min-height:0}
+aside{background:var(--panel);overflow:auto;padding:12px}
+aside.left{border-right:1px solid var(--line)}
+aside.right{border-left:1px solid var(--line)}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px}
+aside h2:first-child{margin-top:0}
+.emoji-font{font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif}
+.emojis{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.emojis button{font-size:22px;padding:4px 0}
+.stickers{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.stickers button{padding:6px;height:72px;background:repeating-conic-gradient(#2a3848 0 25%,#243140 0 50%) 0 0/16px 16px}
+.stickers img{max-width:100%;max-height:100%;display:block;margin:auto;pointer-events:none}
+.row{display:flex;gap:6px;align-items:center;margin:8px 0}
+.row>label{min-width:78px;font-size:13px;color:var(--muted)}
+input[type=text],input[type=number],select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px;font:inherit;font-size:14px;width:100%;min-width:0}
+input[type=color]{width:42px;height:32px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);padding:2px;flex:none}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.center{display:flex;flex-direction:column;min-width:0;min-height:0}
+.stage{flex:1;display:flex;align-items:center;justify-content:center;padding:12px;min-height:0;position:relative}
+#cv{max-width:100%;max-height:100%;background:#000;border-radius:6px;touch-action:none;cursor:default}
+.drop{position:absolute;inset:16px;border:3px dashed var(--line);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted);text-align:center;padding:20px}
+.drop.over{border-color:var(--accent);color:var(--accent)}
+.drop .big{font-size:64px}
+.controls{padding:10px 14px;background:var(--panel);border-top:1px solid var(--line)}
+.ctrlrow{display:flex;gap:10px;align-items:center}
+.time{font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted);min-width:120px;text-align:center}
+.tracks{position:relative;margin-top:8px;max-height:150px;overflow:auto}
+.bar{position:relative;height:24px;margin:3px 0;background:var(--panel2);border-radius:4px}
+.bar span{position:absolute;top:0;bottom:0;min-width:6px;background:#2f6db3;border-radius:4px;font-size:12px;line-height:24px;padding:0 6px;white-space:nowrap;overflow:hidden;cursor:pointer}
+.bar span.sel{background:var(--red);box-shadow:0 0 0 2px var(--accent) inset}
+.playhead{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);pointer-events:none}
+.hint{font-size:12px;color:var(--muted);line-height:1.5}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.btns button{flex:1}
+.progress{height:10px;background:var(--panel2);border-radius:5px;overflow:hidden;width:180px}
+.progress div{height:100%;width:0;background:var(--accent)}
+.hidden{display:none!important}
+.overlay-msg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:10}
+.overlay-msg .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px 28px;max-width:420px;text-align:center}
+.overlay-msg .box .progress{width:100%;margin:16px 0}
+a.dl{color:var(--accent)}
+@media (max-width:1150px){main{grid-template-columns:230px 1fr 240px}.emojis{grid-template-columns:repeat(5,1fr)}}
+@media (max-width:860px){
+  body{height:auto;min-height:100%}
+  main{display:flex;flex-direction:column}
+  .center{order:-1}.stage{height:56vh}
+  aside.left,aside.right{border:0;border-top:1px solid var(--line)}
+  .emojis{grid-template-columns:repeat(8,1fr)}.stickers{grid-template-columns:repeat(3,1fr)}
+  header h1{font-size:18px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚽ EDITOR NAVZAR</h1>
+  <button id="btnOpen">📂 Deschide video</button>
+  <input type="file" id="fileVideo" accept="video/*" class="hidden">
+  <div class="sp"></div>
+  <span id="lastDl" class="hint"></span>
+  <button id="btnExport" class="primary" disabled>💾 Salvează video</button>
+</header>
+
+<main>
+  <aside class="left">
+    <h2>Emoji</h2>
+    <div class="emojis emoji-font" id="emojis"></div>
+
+    <h2>Stickere</h2>
+    <div class="stickers" id="stickers"></div>
+    <div class="btns"><button id="btnUpSticker">➕ Sticker propriu (PNG)</button></div>
+    <input type="file" id="fileSticker" accept="image/*" multiple class="hidden">
+
+    <h2>Text</h2>
+    <input type="text" id="newText" value="GOOOL! ⚽" maxlength="60">
+    <div class="btns"><button id="btnAddText">➕ Adaugă text</button></div>
+
+    <h2>Cum se folosește</h2>
+    <p class="hint">
+      1. Deschide un video.<br>
+      2. Mergi la momentul dorit și apasă pe un emoji, sticker sau text.<br>
+      3. Trage-l cu mouse-ul unde vrei. Colțul galben îl mărește. Rotița mouse-ului îl face mai mare sau mai mic.<br>
+      4. Din dreapta alegi cât timp apare și animația.<br>
+      5. Apasă <b>Salvează video</b>.
+    </p>
+  </aside>
+
+  <section class="center">
+    <div class="stage" id="stage">
+      <canvas id="cv" width="1280" height="720"></canvas>
+      <div class="drop" id="drop">
+        <div class="big">🎬</div>
+        <div><b>Trage aici un video</b><br>sau apasă butonul de mai jos</div>
+        <button id="btnOpen2" class="primary">📂 Deschide video</button>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="ctrlrow">
+        <button id="btnPlay" disabled>▶️ Play</button>
+        <span class="time" id="time">0:00.0 / 0:00.0</span>
+        <input type="range" id="seek" min="0" max="1" step="0.01" value="0" disabled>
+      </div>
+      <div class="tracks" id="tracks"><div class="playhead" id="playhead"></div></div>
+    </div>
+  </section>
+
+  <aside class="right">
+    <h2>Element selectat</h2>
+    <div id="panel"><p class="hint">Apasă pe un emoji, sticker sau text din video ca să-l modifici.</p></div>
+  </aside>
+</main>
+
+<div class="overlay-msg hidden" id="exportBox">
+  <div class="box">
+    <h3 style="margin-top:0">Se salvează video-ul…</h3>
+    <p class="hint">Video-ul rulează o dată de la început până la sfârșit, deci durează cât clipul.<br><b>Nu schimba fereastra și nu minimiza</b> până se termină.</p>
+    <div class="progress"><div id="expBar"></div></div>
+    <div id="expTxt" class="hint">0%</div>
+    <div class="btns"><button id="btnCancel">Anulează</button></div>
+  </div>
+</div>
+
+<script>
+const STICKERS = __STICKERS__;
+const EMOJIS = ['⚽','🥅','👟','🏆','🥇','⭐','🔥','💥','💪','👏','🙌','🎯','😎','😂','🤩','😮','❤️','👍','✅','🚀','⚡','🎉','👑','💯'];
+const EMOJI_FONT = '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+const TEXT_FONT = 'Impact,"Arial Black","Segoe UI Emoji","Apple Color Emoji",sans-serif';
+const ANIMS = [['none','Fără'],['pop','Apare cu zoom'],['fade','Apare treptat'],['bounce','Sare'],['pulse','Pulsează'],['shake','Tremură']];
+
+const $ = s => document.querySelector(s);
+const canvas = $('#cv'), ctx = canvas.getContext('2d');
+const video = document.createElement('video');
+video.playsInline = true; video.preload = 'auto'; video.loop = false;
+
+let W = 1280, H = 720, hasVideo = false, exporting = false;
+let overlays = [], sel = null, nextId = 1, seeking = false;
+let actx = null, monitor = null, recDest = null;
+
+/* ---------- audio (pentru ca sunetul sa intre in fisierul salvat) ---------- */
+function ensureAudio(){
+  if (!actx){
+    actx = new AudioContext();
+    const src = actx.createMediaElementSource(video);
+    monitor = actx.createGain();
+    recDest = actx.createMediaStreamDestination();
+    src.connect(monitor); monitor.connect(actx.destination);
+    src.connect(recDest);
+  }
+  if (actx.state === 'suspended') actx.resume();
+}
+
+/* ---------- incarcare video ---------- */
+function openVideoDialog(){ $('#fileVideo').click(); }
+$('#btnOpen').onclick = openVideoDialog;
+$('#btnOpen2').onclick = openVideoDialog;
+$('#fileVideo').onchange = e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value=''; };
+
+const stage = $('#stage'), drop = $('#drop');
+stage.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+stage.addEventListener('dragleave', () => drop.classList.remove('over'));
+stage.addEventListener('drop', e => {
+  e.preventDefault(); drop.classList.remove('over');
+  const f = [...e.dataTransfer.files];
+  const v = f.find(x => x.type.startsWith('video/') || /\.(mp4|mov|webm|mkv|m4v|avi)$/i.test(x.name));
+  if (v) return loadFile(v);
+  f.filter(x => x.type.startsWith('image/')).forEach(addStickerFile);
+});
+
+function loadFile(file){
+  if (video.src) URL.revokeObjectURL(video.src);
+  video.src = URL.createObjectURL(file);
+  video.onloadedmetadata = () => {
+    let w = video.videoWidth || 1280, h = video.videoHeight || 720;
+    const k = Math.min(1, 1920 / Math.max(w, h));
+    W = canvas.width = Math.round(w * k / 2) * 2;
+    H = canvas.height = Math.round(h * k / 2) * 2;
+    hasVideo = true;
+    drop.classList.add('hidden');
+    $('#seek').max = video.duration; $('#seek').disabled = false;
+    $('#btnPlay').disabled = false; $('#btnExport').disabled = false;
+    overlays.forEach(o => { o.end = Math.min(o.end, video.duration); o.start = Math.min(o.start, o.end); });
+    video.currentTime = 0;
+    renderTracks(); renderPanel();
+  };
+  video.onerror = () => alert('Nu pot deschide acest video. Încearcă un fișier MP4 sau WEBM.');
+  try { ensureAudio(); } catch(e) {}
+}
+
+/* ---------- play / timp ---------- */
+function togglePlay(){
+  if (!hasVideo || exporting) return;
+  ensureAudio();
+  if (video.paused){ if (video.ended) video.currentTime = 0; video.play(); } else video.pause();
+}
+$('#btnPlay').onclick = togglePlay;
+video.addEventListener('play', () => $('#btnPlay').textContent = '⏸️ Pauză');
+video.addEventListener('pause', () => $('#btnPlay').textContent = '▶️ Play');
+const seek = $('#seek');
+seek.addEventListener('input', () => { seeking = true; video.currentTime = +seek.value; });
+seek.addEventListener('change', () => seeking = false);
+
+function fmt(t){ t = Math.max(0, t || 0); const m = Math.floor(t/60), s = t - m*60; return m + ':' + s.toFixed(1).padStart(4,'0'); }
+function dur(){ return hasVideo && isFinite(video.duration) ? video.duration : 10; }
+
+/* ---------- elemente (emoji / sticker / text) ---------- */
+function addOverlay(o){
+  const t = hasVideo ? video.currentTime : 0, d = dur();
+  let start = t, end = Math.min(d, t + 3);
+  if (end - start < 1){ start = Math.max(0, d - 3); end = d; }
+  o = Object.assign({ id: nextId++, x: .5, y: .5, rot: 0, start, end, anim: 'pop' }, o);
+  overlays.push(o); select(o); renderTracks();
+}
+function addEmoji(e){ addOverlay({ kind:'emoji', text:e, size:.2 }); }
+function addImage(st){ addOverlay({ kind:'image', img: st.img, name: st.name, size: st.img.naturalWidth / st.img.naturalHeight > 2.5 ? .16 : .3 }); }
+function addText(){
+  const txt = $('#newText').value.trim(); if (!txt) return;
+  addOverlay({ kind:'text', text: txt, size:.12, color:'#ffd600', stroke:'#1a1a1a' });
+}
+
+const emojiBox = $('#emojis');
+EMOJIS.forEach(e => { const b = document.createElement('button'); b.textContent = e; b.title = 'Adaugă ' + e; b.onclick = () => addEmoji(e); emojiBox.appendChild(b); });
+
+const library = [];
+function addStickerToLibrary(name, src){
+  const img = new Image(); img.src = src;
+  const st = { name, img };
+  library.push(st);
+  const b = document.createElement('button'); b.title = 'Adaugă ' + name;
+  const thumb = document.createElement('img'); thumb.src = src; b.appendChild(thumb);
+  b.onclick = () => img.complete ? addImage(st) : img.onload = () => addImage(st);
+  $('#stickers').appendChild(b);
+  return st;
+}
+STICKERS.forEach(s => addStickerToLibrary(s.name, s.src));
+function addStickerFile(f){
+  const r = new FileReader();
+  r.onload = () => { const st = addStickerToLibrary(f.name, r.result); st.img.onload = () => addImage(st); };
+  r.readAsDataURL(f);
+}
+$('#btnUpSticker').onclick = () => $('#fileSticker').click();
+$('#fileSticker').onchange = e => { [...e.target.files].forEach(addStickerFile); e.target.value=''; };
+$('#btnAddText').onclick = addText;
+$('#newText').addEventListener('keydown', e => { if (e.key === 'Enter') addText(); });
+
+/* ---------- desenare ---------- */
+const easeOutBack = p => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3*Math.pow(p-1,3) + c1*Math.pow(p-1,2); };
+function visible(o, t){ return t >= o.start && t <= o.end; }
+
+function animState(o, t){
+  const since = t - o.start, left = o.end - t;
+  let s = 1, a = 1, dx = 0, dy = 0;
+  if (o.anim === 'pop') s = easeOutBack(Math.min(1, since / .35));
+  if (o.anim === 'fade') a = Math.max(0, Math.min(1, since / .4, left / .4));
+  if (o.anim === 'bounce') dy = -Math.abs(Math.sin(since * 5)) * .06 * H;
+  if (o.anim === 'pulse') s = 1 + .1 * Math.sin(since * 8);
+  if (o.anim === 'shake') dx = Math.sin(since * 40) * .008 * W;
+  return { s, a, dx, dy };
+}
+
+function measure(o){
+  const h = o.size * H;
+  if (o.kind === 'image') return { w: h * o.img.naturalWidth / o.img.naturalHeight, h };
+  ctx.font = (o.kind === 'emoji' ? `${h}px ${EMOJI_FONT}` : `${h}px ${TEXT_FONT}`);
+  return { w: ctx.measureText(o.text).width + (o.kind === 'text' ? h * .14 : 0), h };
+}
+
+function drawOverlay(o, t){
+  const { w, h } = measure(o), st = animState(o, t);
+  ctx.save();
+  ctx.globalAlpha = st.a;
+  ctx.translate(o.x * W + st.dx, o.y * H + st.dy);
+  ctx.rotate(o.rot * Math.PI / 180);
+  ctx.scale(st.s, st.s);
+  if (o.kind === 'image'){
+    ctx.drawImage(o.img, -w/2, -h/2, w, h);
+  } else {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (o.kind === 'emoji'){
+      ctx.font = `${h}px ${EMOJI_FONT}`;
+      ctx.fillText(o.text, 0, h * .05);
+    } else {
+      ctx.font = `${h}px ${TEXT_FONT}`;
+      ctx.lineJoin = 'round'; ctx.lineWidth = h * .14; ctx.strokeStyle = o.stroke;
+      ctx.strokeText(o.text, 0, h * .04);
+      ctx.fillStyle = o.color; ctx.fillText(o.text, 0, h * .04);
+    }
+  }
+  ctx.restore();
+}
+
+function handleSize(){ return Math.max(14, H * .03); }
+function drawSelection(o){
+  const { w, h } = measure(o), pad = Math.max(4, H * .008), hs = handleSize();
+  ctx.save();
+  ctx.translate(o.x * W, o.y * H); ctx.rotate(o.rot * Math.PI / 180);
+  ctx.lineWidth = Math.max(2, H / 360);
+  ctx.setLineDash([H / 70, H / 110]);
+  ctx.strokeStyle = '#ffd600';
+  ctx.strokeRect(-w/2 - pad, -h/2 - pad, w + 2*pad, h + 2*pad);
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ffd600'; ctx.strokeStyle = '#1a1a1a';
+  ctx.fillRect(w/2 + pad - hs/2, h/2 + pad - hs/2, hs, hs);
+  ctx.strokeRect(w/2 + pad - hs/2, h/2 + pad - hs/2, hs, hs);
+  ctx.restore();
+}
+
+function draw(){
+  if (!hasVideo){
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); return;
+  }
+  ctx.drawImage(video, 0, 0, W, H);
+  const t = video.currentTime;
+  for (const o of overlays) if (visible(o, t)) drawOverlay(o, t);
+  if (sel && !exporting && visible(sel, t)) drawSelection(sel);
+}
+
+function loop(){
+  draw();
+  const t = video.currentTime || 0, d = dur();
+  $('#time').textContent = fmt(t) + ' / ' + fmt(hasVideo ? d : 0);
+  if (!seeking) seek.value = t;
+  $('#playhead').style.left = (t / d * 100) + '%';
+  if (exporting){
+    const p = Math.min(100, t / d * 100);
+    $('#expBar').style.width = p + '%'; $('#expTxt').textContent = Math.round(p) + '%';
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- mouse pe video: selectare, mutare, marire ---------- */
+function toCanvas(e){ const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; }
+function toLocal(o, p){
+  const a = -o.rot * Math.PI / 180, dx = p.x - o.x * W, dy = p.y - o.y * H;
+  return { x: dx * Math.cos(a) - dy * Math.sin(a), y: dx * Math.sin(a) + dy * Math.cos(a) };
+}
+let drag = null;
+canvas.addEventListener('pointerdown', e => {
+  if (!hasVideo || exporting) return;
+  const p = toCanvas(e), t = video.currentTime;
+  if (sel && visible(sel, t)){
+    const { w, h } = measure(sel), pad = Math.max(4, H * .008), l = toLocal(sel, p), hs = handleSize();
+    if (Math.abs(l.x - (w/2 + pad)) < hs && Math.abs(l.y - (h/2 + pad)) < hs){
+      drag = { mode: 'resize', o: sel, d0: Math.hypot(p.x - sel.x * W, p.y - sel.y * H), s0: sel.size };
+      canvas.setPointerCapture(e.pointerId); return;
+    }
+  }
+  const hit = [...overlays].reverse().find(o => {
+    if (!visible(o, t)) return false;
+    const { w, h } = measure(o), l = toLocal(o, p);
+    return Math.abs(l.x) <= w/2 + 6 && Math.abs(l.y) <= h/2 + 6;
+  });
+  select(hit || null);
+  if (hit){ drag = { mode: 'move', o: hit, px: p.x, py: p.y, x0: hit.x, y0: hit.y }; canvas.setPointerCapture(e.pointerId); }
+});
+canvas.addEventListener('pointermove', e => {
+  const p = toCanvas(e);
+  if (!drag){
+    if (!hasVideo) return;
+    const t = video.currentTime;
+    let cur = 'default';
+    if (sel && visible(sel, t)){
+      const { w, h } = measure(sel), pad = Math.max(4, H * .008), l = toLocal(sel, p), hs = handleSize();
+      if (Math.abs(l.x - (w/2 + pad)) < hs && Math.abs(l.y - (h/2 + pad)) < hs) cur = 'nwse-resize';
+    }
+    if (cur === 'default' && overlays.some(o => { if (!visible(o, t)) return false; const { w, h } = measure(o), l = toLocal(o, p); return Math.abs(l.x) <= w/2 && Math.abs(l.y) <= h/2; })) cur = 'move';
+    canvas.style.cursor = cur; return;
+  }
+  if (drag.mode === 'move'){
+    drag.o.x = Math.min(1, Math.max(0, drag.x0 + (p.x - drag.px) / W));
+    drag.o.y = Math.min(1, Math.max(0, drag.y0 + (p.y - drag.py) / H));
+  } else {
+    const d = Math.hypot(p.x - drag.o.x * W, p.y - drag.o.y * H);
+    drag.o.size = Math.min(1, Math.max(.02, drag.s0 * d / Math.max(1, drag.d0)));
+    syncPanel();
+  }
+});
+canvas.addEventListener('pointerup', () => drag = null);
+canvas.addEventListener('wheel', e => {
+  if (!sel || !visible(sel, video.currentTime)) return;
+  e.preventDefault();
+  sel.size = Math.min(1, Math.max(.02, sel.size * (e.deltaY < 0 ? 1.08 : 1 / 1.08)));
+  syncPanel();
+}, { passive: false });
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input, select, textarea')) return;
+  if (e.code === 'Space'){ e.preventDefault(); togglePlay(); }
+  if ((e.key === 'Delete' || e.key === 'Backspace') && sel){ e.preventDefault(); removeSel(); }
+  if (e.key === 'ArrowLeft' && hasVideo) video.currentTime = Math.max(0, video.currentTime - (e.shiftKey ? 1 : .1));
+  if (e.key === 'ArrowRight' && hasVideo) video.currentTime = Math.min(dur(), video.currentTime + (e.shiftKey ? 1 : .1));
+});
+
+/* ---------- linia de timp ---------- */
+function label(o){ return o.kind === 'image' ? '🖼️ ' + o.name : o.text; }
+function renderTracks(){
+  const tr = $('#tracks'), ph = $('#playhead');
+  tr.innerHTML = ''; tr.appendChild(ph);
+  const d = dur();
+  overlays.forEach(o => {
+    const bar = document.createElement('div'); bar.className = 'bar';
+    const s = document.createElement('span');
+    s.className = o === sel ? 'sel' : '';
+    s.style.left = (o.start / d * 100) + '%';
+    s.style.width = ((o.end - o.start) / d * 100) + '%';
+    s.textContent = label(o); s.title = label(o) + '  ' + fmt(o.start) + ' – ' + fmt(o.end);
+    s.onclick = () => { select(o); if (hasVideo) video.currentTime = Math.min(o.end, o.start + .4); };
+    bar.appendChild(s); tr.appendChild(bar);
+  });
+}
+
+/* ---------- panoul din dreapta ---------- */
+function select(o){ sel = o; renderPanel(); renderTracks(); }
+function removeSel(){ overlays = overlays.filter(o => o !== sel); select(null); }
+
+function renderPanel(){
+  const p = $('#panel');
+  if (!sel){ p.innerHTML = '<p class="hint">Apasă pe un emoji, sticker sau text din video ca să-l modifici.</p>'; return; }
+  const o = sel, d = dur();
+  p.innerHTML = `
+    <div style="font-size:15px;margin-bottom:6px"><b>${o.kind === 'image' ? '🖼️ Sticker' : o.kind === 'emoji' ? 'Emoji' : 'Text'}</b></div>
+    ${o.kind === 'text' ? `
+      <div class="row"><input type="text" id="pText" maxlength="60"></div>
+      <div class="row"><label>Culoare</label><input type="color" id="pColor"><label style="min-width:auto">Contur</label><input type="color" id="pStroke"></div>` : ''}
+    <div class="row"><label>Mărime</label><input type="range" id="pSize" min="2" max="100" step="1"></div>
+    <div class="row"><label>Rotire</label><input type="range" id="pRot" min="-45" max="45" step="1"></div>
+    <div class="row"><label>Apare la</label><input type="number" id="pStart" min="0" max="${d.toFixed(2)}" step="0.1"><button id="pStartNow" title="Momentul curent din video">acum</button></div>
+    <div class="row"><label>Dispare la</label><input type="number" id="pEnd" min="0" max="${d.toFixed(2)}" step="0.1"><button id="pEndNow" title="Momentul curent din video">acum</button></div>
+    <div class="row"><label>Animație</label><select id="pAnim">${ANIMS.map(([v, n]) => `<option value="${v}">${n}</option>`).join('')}</select></div>
+    <div class="btns">
+      <button id="pAll">↔️ Pe tot clipul</button>
+      <button id="pCenter">🎯 La mijloc</button>
+    </div>
+    <div class="btns">
+      <button id="pDup">📄 Duplică</button>
+      <button id="pDel">🗑️ Șterge</button>
+    </div>
+    <p class="hint" style="margin-top:14px">Sfat: tasta <b>Delete</b> șterge elementul, <b>Spațiu</b> pornește/oprește video-ul, săgețile mută timpul.</p>`;
+  const on = (id, ev, fn) => { const el = $('#' + id); if (el) el.addEventListener(ev, fn); };
+  on('pText', 'input', e => { o.text = e.target.value; renderTracks(); });
+  on('pColor', 'input', e => o.color = e.target.value);
+  on('pStroke', 'input', e => o.stroke = e.target.value);
+  on('pSize', 'input', e => o.size = e.target.value / 100);
+  on('pRot', 'input', e => o.rot = +e.target.value);
+  on('pStart', 'change', e => { o.start = clamp(+e.target.value, 0, o.end - .1); syncPanel(); renderTracks(); });
+  on('pEnd', 'change', e => { o.end = clamp(+e.target.value, o.start + .1, dur()); syncPanel(); renderTracks(); });
+  on('pStartNow', 'click', () => { o.start = Math.min(video.currentTime, o.end - .1); if (o.start < 0) o.start = 0; syncPanel(); renderTracks(); });
+  on('pEndNow', 'click', () => { o.end = Math.max(video.currentTime, o.start + .1); syncPanel(); renderTracks(); });
+  on('pAnim', 'change', e => o.anim = e.target.value);
+  on('pAll', 'click', () => { o.start = 0; o.end = dur(); syncPanel(); renderTracks(); });
+  on('pCenter', 'click', () => { o.x = .5; o.y = .5; });
+  on('pDup', 'click', () => { const c = Object.assign({}, o, { id: nextId++, x: Math.min(1, o.x + .05), y: Math.min(1, o.y + .05) }); overlays.push(c); select(c); });
+  on('pDel', 'click', removeSel);
+  syncPanel();
+}
+function clamp(v, a, b){ return Math.min(b, Math.max(a, isFinite(v) ? v : a)); }
+function syncPanel(){
+  if (!sel) return; const o = sel, set = (id, v) => { const el = $('#' + id); if (el && document.activeElement !== el) el.value = v; };
+  set('pText', o.text); set('pColor', o.color); set('pStroke', o.stroke);
+  set('pSize', Math.round(o.size * 100)); set('pRot', o.rot);
+  set('pStart', o.start.toFixed(1)); set('pEnd', o.end.toFixed(1)); set('pAnim', o.anim);
+}
+
+/* ---------- salvare video ---------- */
+let cancelExport = null;
+const once = (el, ev) => new Promise(r => el.addEventListener(ev, r, { once: true }));
+function pickMime(){
+  return ['video/mp4;codecs=avc1.640028,mp4a.40.2','video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1,opus','video/mp4',
+          'video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m => MediaRecorder.isTypeSupported(m));
+}
+async function doExport(){
+  if (!hasVideo || exporting) return;
+  ensureAudio();
+  const mime = pickMime();
+  if (!mime){ alert('Browserul nu poate salva video. Folosește Google Chrome sau Microsoft Edge.'); return; }
+  const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
+  exporting = true; $('#exportBox').classList.remove('hidden');
+  video.pause(); video.currentTime = 0; await once(video, 'seeked');
+
+  const stream = canvas.captureStream(30);
+  recDest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 10_000_000 });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  const stopped = new Promise(r => rec.onstop = r);
+  let cancelled = false;
+  const finished = new Promise(r => { cancelExport = () => { cancelled = true; r(); }; video.addEventListener('ended', r, { once: true }); });
+
+  monitor.gain.value = 0;
+  rec.start(500);
+  await video.play();
+  await finished;
+  video.pause();
+  rec.stop(); await stopped;
+  stream.getVideoTracks().forEach(t => t.stop());
+  monitor.gain.value = 1;
+  exporting = false; cancelExport = null;
+  $('#exportBox').classList.add('hidden');
+  if (cancelled) return;
+
+  const blob = new Blob(chunks, { type: mime.split(';')[0] });
+  const url = URL.createObjectURL(blob);
+  const d = new Date(), stamp = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + '-' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0');
+  const name = `navzar-${stamp}.${ext}`;
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  $('#lastDl').innerHTML = `Salvat: <a class="dl" href="${url}" download="${name}">${name}</a> (${(blob.size/1048576).toFixed(1)} MB)`;
+  window.__lastExport = { name, size: blob.size, type: blob.type };
+}
+$('#btnExport').onclick = doExport;
+$('#btnCancel').onclick = () => cancelExport && cancelExport();
+
+window.__editor = { loadFile, addEmoji, addText, addImage, library, get overlays(){ return overlays; }, video };
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

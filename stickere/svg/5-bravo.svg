@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="600" viewBox="0 0 600 600">
+<polygon points="300,20 371,203 567,213 414,336 465,525 300,418 135,525 186,336 33,213 229,203" fill="#ffd600" stroke="#1a1a1a" stroke-width="14" stroke-linejoin="round"/>
+<text x="300" y="285" font-family="Impact, 'Arial Black', sans-serif" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke-linejoin="round" font-size="100" fill="#e53935" stroke="#fff" stroke-width="12">BRAVO</text>
+<rect x="135" y="380" width="330" height="95" rx="47" fill="#e53935" stroke="#fff" stroke-width="7" transform="rotate(-5 300 427)"/>
+<text x="300" y="427" font-family="Impact, 'Arial Black', sans-serif" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke-linejoin="round" font-size="72" letter-spacing="4" fill="#fff" stroke="#1a1a1a" stroke-width="6" transform="rotate(-5 300 427)">NAVZAR</text></svg>
