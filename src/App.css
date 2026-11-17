@@ -98,7 +98,8 @@ a.dl { color: var(--accent); }
   .app { height: auto; }
   main { display: flex; flex-direction: column; }
   .center { order: 0; position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
-  .stage { height: 38vh; height: 38svh; padding: 6px; }
+  /* flex: none = inaltime fixa; altfel un video vertical (filmat cu telefonul) o umfla cat tot ecranul */
+  .stage { flex: none; height: 42vh; height: 42svh; padding: 6px; }
   .drop { inset: 6px; gap: 8px; padding: 10px; }
   .drop .big { font-size: 40px; }
   .controls { padding: 8px 10px; }
