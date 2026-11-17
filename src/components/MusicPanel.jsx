@@ -7,7 +7,6 @@ export default function MusicPanel({ music, videoVolume, time, duration, onLoadM
   const [copied, setCopied] = useState(false);
   const online = (
     <>
-      <h2>Muzică gratuită online</h2>
       <OnlineMusic onPick={(file, credit) => { onLoadMusic(file, credit); setBrowsing(false); }} />
     </>
   );
@@ -26,7 +25,7 @@ export default function MusicPanel({ music, videoVolume, time, duration, onLoadM
     <div className="music">
       {!music ? (
         <>
-          {picker('🎵 Alege muzică de pe calculator')}
+          {picker('🎵 Alege muzică din telefon / calculator')}
           {online}
           <p className="hint">
             Melodiile de aici sunt gratuite și se pot folosi pe YouTube. La unele trebuie să scrii autorul
@@ -73,7 +72,7 @@ export default function MusicPanel({ music, videoVolume, time, duration, onLoadM
           <label className="check"><input type="checkbox" checked={music.fadeOut} onChange={(e) => onMusicChange({ fadeOut: e.target.checked })} /> Se stinge la final</label>
 
           <div className="btns">
-            {picker('🔁 De pe calculator')}
+            {picker('🔁 Din fișierele tale')}
             <button onClick={() => setBrowsing((b) => !b)}>{browsing ? '✖ Închide' : '🌐 Caută online'}</button>
             <button onClick={onRemoveMusic}>🗑️ Elimină</button>
           </div>

@@ -1,11 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { fmt } from '../lib/format';
+import { FOOTBALL_TRACKS } from '../lib/footballMusic';
 
 // Cauta muzica gratuita (licente Creative Commons) prin Openverse:
 // melodii de pe Jamendo, Freesound si Wikimedia, fara cont si fara cheie.
 // Doar licente care permit folosirea in clipuri monetizate si modificarea.
 const API = 'https://api.openverse.org/v1/audio/';
-const SUGGESTIONS = ['energetic', 'sport', 'rock', 'epic', 'happy', 'electronic', 'hip hop'];
+// Cautari rapide, toate pe teme de fotbal: [eticheta, ce se cauta (in engleza)].
+const SUGGESTIONS = [
+  ['⚽ Sport', 'sport energetic'],
+  ['🏆 Victorie', 'victory'],
+  ['🔥 Acțiune', 'action energetic'],
+  ['🎸 Rock', 'energetic rock'],
+  ['🎺 Imn', 'anthem'],
+  ['🏟️ Stadion', 'stadium'],
+  ['🥁 Tobe', 'drums energetic'],
+  ['🥇 Campion', 'champion'],
+];
 const LICENSE_NAMES = { cc0: 'CC0 (liber)', pdm: 'Domeniu public', by: 'CC BY', 'by-sa': 'CC BY-SA' };
 
 function needsCredit(license) {
@@ -13,7 +24,7 @@ function needsCredit(license) {
 }
 
 export default function OnlineMusic({ onPick }) {
-  const [query, setQuery] = useState('energetic');
+  const [query, setQuery] = useState('sport energetic');
   const [results, setResults] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -78,37 +89,40 @@ export default function OnlineMusic({ onPick }) {
     }
   };
 
+  const row = (r) => (
+    <li key={r.id}>
+      <button className="play" title={playing === r.id ? 'Oprește' : 'Ascultă'} onClick={() => togglePreview(r)}>
+        {playing === r.id ? '⏸' : '▶'}
+      </button>
+      <div className="info">
+        <div className="t" title={r.title}>{r.title}</div>
+        <div className="hint">{r.mood ? `${r.mood} · ` : ''}{r.creator} · {fmt(r.duration / 1000)} · {LICENSE_NAMES[r.license] || r.license}</div>
+      </div>
+      <button className="use" disabled={loadingId !== null} onClick={() => pick(r)}>
+        {loadingId === r.id ? '…' : 'Folosește'}
+      </button>
+    </li>
+  );
+
   return (
     <div className="online">
+      <h2>⚽ Melodii de fotbal</h2>
+      <p className="hint">Alese pentru clipuri de fotbal: energice, fără voce. Apasă ▶ ca să asculți.</p>
+      <ul className="tracks">{FOOTBALL_TRACKS.map(row)}</ul>
+
+      <h2>Caută altele</h2>
       <div className="row">
-        <input type="text" value={query} placeholder="ex: energetic, rock…" onChange={(e) => setQuery(e.target.value)}
+        <input type="text" value={query} placeholder="în engleză, ex: sport, victory…" onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && search()} />
         <button onClick={() => search()}>🔍</button>
       </div>
       <div className="chips">
-        {SUGGESTIONS.map((s) => (
-          <button key={s} onClick={() => { setQuery(s); search(s); }}>{s}</button>
+        {SUGGESTIONS.map(([label, q]) => (
+          <button key={q} onClick={() => { setQuery(q); search(q); }}>{label}</button>
         ))}
       </div>
       {status && <p className="hint">{status}</p>}
-      {results && results.length > 0 && (
-        <ul className="tracks">
-          {results.map((r) => (
-            <li key={r.id}>
-              <button className="play" title={playing === r.id ? 'Oprește' : 'Ascultă'} onClick={() => togglePreview(r)}>
-                {playing === r.id ? '⏸' : '▶'}
-              </button>
-              <div className="info">
-                <div className="t" title={r.title}>{r.title}</div>
-                <div className="hint">{r.creator} · {fmt(r.duration / 1000)} · {LICENSE_NAMES[r.license] || r.license}</div>
-              </div>
-              <button className="use" disabled={loadingId !== null} onClick={() => pick(r)}>
-                {loadingId === r.id ? '…' : 'Folosește'}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {results && results.length > 0 && <ul className="tracks">{results.map(row)}</ul>}
       {hasMore && <div className="btns"><button onClick={() => search(query, page + 1)}>Mai multe</button></div>}
     </div>
   );
