@@ -17,6 +17,8 @@ const SUGGESTIONS = [
   ['🥁 Tobe', 'drums energetic'],
   ['🥇 Campion', 'champion'],
 ];
+// Stilurile din lista de fotbal, in ordinea in care apar (pentru filtrare).
+const MOODS = [...new Set(FOOTBALL_TRACKS.map((t) => t.mood))];
 const LICENSE_NAMES = { cc0: 'CC0 (liber)', pdm: 'Domeniu public', by: 'CC BY', 'by-sa': 'CC BY-SA' };
 
 function needsCredit(license) {
@@ -31,6 +33,7 @@ export default function OnlineMusic({ onPick }) {
   const [status, setStatus] = useState('');
   const [playing, setPlaying] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
+  const [mood, setMood] = useState(null); // null = toate stilurile
   const preview = useRef(null);
 
   if (!preview.current) preview.current = new Audio();
@@ -107,8 +110,14 @@ export default function OnlineMusic({ onPick }) {
   return (
     <div className="online">
       <h2>⚽ Melodii de fotbal</h2>
-      <p className="hint">Alese pentru clipuri de fotbal: energice, fără voce. Apasă ▶ ca să asculți.</p>
-      <ul className="tracks">{FOOTBALL_TRACKS.map(row)}</ul>
+      <p className="hint">{FOOTBALL_TRACKS.length} melodii alese pentru clipuri de fotbal: energice, fără voce. Apasă ▶ ca să asculți.</p>
+      <div className="chips">
+        <button className={mood === null ? 'active' : ''} onClick={() => setMood(null)}>Toate</button>
+        {MOODS.map((m) => (
+          <button key={m} className={mood === m ? 'active' : ''} onClick={() => setMood(m)}>{m}</button>
+        ))}
+      </div>
+      <ul className="tracks">{FOOTBALL_TRACKS.filter((t) => !mood || t.mood === mood).map(row)}</ul>
 
       <h2>Caută altele</h2>
       <div className="row">
