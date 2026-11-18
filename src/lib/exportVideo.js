@@ -79,7 +79,7 @@ export async function exportVideo({ canvas, video, engine, onProgress, control }
   const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
   const raw = new Blob(chunks, { type: mime.split(';')[0] });
   const blob = await fixDuration(raw, t0 && t1 > t0 ? (t1 - t0) / 1000 : video.duration);
-  return { blob, name: `navzar-${stamp()}.${ext}` };
+  return { blob, name: `razvan-${stamp()}.${ext}` };
 }
 
 /** Se poate trimite fisierul prin meniul de distribuire al telefonului (Galerie, WhatsApp...)? */

@@ -8,7 +8,7 @@ import bara from '../assets/stickere/6-bara-nume.png';
 // Ca sa adaugi un sticker nou pentru totdeauna: pune PNG-ul in src/assets/stickere,
 // importa-l mai sus si adauga-l in lista de mai jos.
 export const BUILTIN_STICKERS = [
-  { name: 'Logo NAVZAR', src: logo },
+  { name: 'Logo RĂZVAN', src: logo },
   { name: 'GOOOL', src: gol },
   { name: 'Abonează-te', src: aboneaza },
   { name: 'Exercițiul zilei', src: exercitiu },

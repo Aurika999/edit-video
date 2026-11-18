@@ -220,7 +220,7 @@ export default function App() {
 
   // Doar pentru testare in modul de dezvoltare (npm run dev).
   if (import.meta.env.DEV) {
-    window.__navzar = { loadVideo, loadMusic, addEmoji, addText, addSticker, library, video, musicEl, live, startExport, lastExport };
+    window.__editor = { loadVideo, loadMusic, addEmoji, addText, addSticker, library, video, musicEl, live, startExport, lastExport };
   }
 
   return (

@@ -1,4 +1,4 @@
-# ⚽ Editor video NAVZAR
+# ⚽ Editor video RĂZVAN
 
 Aplicație React (Vite) pentru editarea clipurilor de fotbal: pui emoji, stickere,
 text și muzică peste video, apoi salvezi un fișier MP4 gata de urcat pe YouTube.
@@ -37,7 +37,7 @@ text și muzică peste video, apoi salvezi un fișier MP4 gata de urcat pe YouTu
 2. Mergi la secunda dorită (bara de timp sau săgețile ← →).
 3. Din stânga alegi:
    - **😀 Emoji**: un clic și apare pe video.
-   - **🖼️ Stickere**: stickerele NAVZAR sau un PNG de-al tău.
+   - **🖼️ Stickere**: stickerele RĂZVAN sau un PNG de-al tău.
    - **🔤 Text**: scrii, apeși „Adaugă text”, iar culoarea o alegi din dreapta.
    - **🎵 Muzică**: cauți muzică gratuită online (scrii un cuvânt în engleză, de ex. „energetic”,
      asculți cu ▶ și apeși „Folosește”) sau alegi un MP3 de pe calculator. Alegi apoi de la ce secundă pornește, volumul, repetarea,
@@ -45,7 +45,7 @@ text și muzică peste video, apoi salvezi un fișier MP4 gata de urcat pe YouTu
 4. Tragi elementele cu mouse-ul. **Pătrățelul galben** din colț sau **rotița mouse-ului** le mărește.
 5. Din dreapta alegi **când apare / când dispare** (butonul „acum” ia secunda curentă) și **animația**.
 6. **💾 Salvează video**: video-ul rulează o dată de la cap la coadă și se descarcă
-   `navzar-AAAALLZZ-OOMM.mp4`. Nu minimiza fereastra cât se salvează.
+   `razvan-AAAALLZZ-OOMM.mp4`. Nu minimiza fereastra cât se salvează.
 
 Scurtături: **Spațiu** = play/pauză, **Delete** = șterge elementul selectat,
 **← →** = 0,1 secunde înapoi/înainte (cu **Shift** câte 1 secundă).
@@ -88,7 +88,7 @@ src/
     render.js           desenarea pe canvas și animațiile
     audio.js            amestecul sunet video + muzică
     exportVideo.js      salvarea în MP4/WEBM
-    stickers.js         lista stickerelor NAVZAR
+    stickers.js         lista stickerelor RĂZVAN
     constants.js        emoji-uri, animații, fonturi
   assets/stickere/      PNG-urile stickerelor
 ```

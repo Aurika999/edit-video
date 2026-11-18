@@ -1,9 +1,9 @@
-# Construieste editor-navzar.html: pune stickerele PNG direct in pagina.
+# Construieste editor-razvan.html: pune stickerele PNG direct in pagina.
 import base64, json, pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
 names = {
-    "1-logo-minge": "Logo NAVZAR",
+    "1-logo-minge": "Logo RĂZVAN",
     "2-gol": "GOOOL",
     "3-aboneaza-te": "Abonează-te",
     "4-exercitiul-zilei": "Exercițiul zilei",
@@ -17,5 +17,5 @@ for stem, name in names.items():
 
 tpl = (root / "sursa" / "editor-template.html").read_text(encoding="utf-8")
 out = tpl.replace("__STICKERS__", json.dumps(stickers, ensure_ascii=False))
-(root / "editor-navzar.html").write_text(out, encoding="utf-8")
+(root / "editor-razvan.html").write_text(out, encoding="utf-8")
 print("ok", len(out) // 1024, "KB")

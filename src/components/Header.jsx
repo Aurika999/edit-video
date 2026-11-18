@@ -4,7 +4,7 @@ export default function Header({ canExport, lastExport, onOpenVideo, onExport })
   const fileRef = useRef(null);
   return (
     <header>
-      <h1>⚽ EDITOR NAVZAR</h1>
+      <h1>⚽ EDITOR RĂZVAN</h1>
       <button onClick={() => fileRef.current.click()}>📂 Deschide video</button>
       <input
         ref={fileRef}

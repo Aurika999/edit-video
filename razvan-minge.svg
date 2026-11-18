@@ -47,10 +47,13 @@
   <circle cx="400" cy="400" r="300" fill="none" stroke="#1a1a1a" stroke-width="6"/>
 
   <!-- textul -->
-  <g transform="rotate(-8 400 420)">
-    <rect x="130" y="345" width="540" height="150" rx="22" fill="#e53935" stroke="#ffffff" stroke-width="8"/>
-    <text x="400" y="420" text-anchor="middle" dominant-baseline="central"
-          font-family="Impact, 'Arial Black', sans-serif" font-size="130" letter-spacing="6"
-          fill="#ffd600" stroke="#1a1a1a" stroke-width="10" paint-order="stroke" stroke-linejoin="round">NAVZAR</text>
+  <g transform="rotate(-8 400 415)">
+    <rect x="105" y="300" width="590" height="230" rx="26" fill="#e53935" stroke="#ffffff" stroke-width="8"/>
+    <text x="400" y="368" text-anchor="middle" dominant-baseline="central"
+          font-family="Impact, 'Arial Black', sans-serif" font-size="118" letter-spacing="6"
+          fill="#ffd600" stroke="#1a1a1a" stroke-width="10" paint-order="stroke" stroke-linejoin="round">RĂZVAN</text>
+    <text x="400" y="470" text-anchor="middle" dominant-baseline="central"
+          font-family="Impact, 'Arial Black', sans-serif" font-size="96" letter-spacing="6"
+          fill="#ffd600" stroke="#1a1a1a" stroke-width="10" paint-order="stroke" stroke-linejoin="round">TĂURECI</text>
   </g>
 </svg>

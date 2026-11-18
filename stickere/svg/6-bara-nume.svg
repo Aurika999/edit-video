@@ -5,5 +5,5 @@
 <path d="M90,30 L960,30 L910,170 L90,170 Z" fill="#e53935" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
 <path d="M90,130 L924,130 L910,170 L90,170 Z" fill="#1a1a1a"/>
 <use xlink:href="#ball" transform="translate(-5 -5) scale(0.26)"/>
-<text x="530" y="80" font-family="Impact, 'Arial Black', sans-serif" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke-linejoin="round" font-size="90" letter-spacing="10" fill="#ffd600" stroke="#1a1a1a" stroke-width="8">NAVZAR</text>
+<text x="530" y="80" font-family="Impact, 'Arial Black', sans-serif" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke-linejoin="round" font-size="90" letter-spacing="10" fill="#ffd600" stroke="#1a1a1a" stroke-width="8">RĂZVAN</text>
 <text x="530" y="150" font-family="Impact, 'Arial Black', sans-serif" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke-linejoin="round" font-size="30" letter-spacing="6" fill="#fff">MICUL FOTBALIST</text></svg>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Editor video NAVZAR</title>
+<title>Editor video RĂZVAN</title>
 <style>
 :root{--bg:#0f1720;--panel:#18222e;--panel2:#223040;--line:#2f3f52;--text:#e8eef5;--muted:#93a4b8;--accent:#ffd600;--red:#e53935}
 *{box-sizing:border-box}
@@ -70,7 +70,7 @@ a.dl{color:var(--accent)}
 </head>
 <body>
 <header>
-  <h1>⚽ EDITOR NAVZAR</h1>
+  <h1>⚽ EDITOR RĂZVAN</h1>
   <button id="btnOpen">📂 Deschide video</button>
   <input type="file" id="fileVideo" accept="video/*" class="hidden">
   <div class="sp"></div>
@@ -517,7 +517,7 @@ async function doExport(){
   const blob = new Blob(chunks, { type: mime.split(';')[0] });
   const url = URL.createObjectURL(blob);
   const d = new Date(), stamp = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0') + '-' + String(d.getHours()).padStart(2,'0') + String(d.getMinutes()).padStart(2,'0');
-  const name = `navzar-${stamp}.${ext}`;
+  const name = `razvan-${stamp}.${ext}`;
   const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
   $('#lastDl').innerHTML = `Salvat: <a class="dl" href="${url}" download="${name}">${name}</a> (${(blob.size/1048576).toFixed(1)} MB)`;
   window.__lastExport = { name, size: blob.size, type: blob.type };
