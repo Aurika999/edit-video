@@ -2,6 +2,9 @@
 // si sunetul (video + muzica) sunt inregistrate intr-un fisier nou.
 
 import { fixDuration } from './fixDuration.js';
+import { nextKept, toFinalTime } from './cuts.js';
+
+const finalDuration = (removed, D) => D - removed.reduce((s, [a, b]) => s + (b - a), 0);
 
 const MIMES = [
   'video/mp4;codecs=avc1.640028,mp4a.40.2',
@@ -29,7 +32,7 @@ function stamp() {
  * control: { cancelled, cancel } - cancel() se poate apela ca sa opreasca salvarea.
  * Intoarce { blob, name } sau null daca s-a anulat.
  */
-export async function exportVideo({ canvas, video, engine, onProgress, control }) {
+export async function exportVideo({ canvas, video, engine, onProgress, control, removed = [] }) {
   const mime = pickMime();
   if (!mime) throw new Error('Browserul nu poate salva video. Folosește Google Chrome sau Microsoft Edge.');
   engine.ensure();
@@ -43,29 +46,66 @@ export async function exportVideo({ canvas, video, engine, onProgress, control }
   let wake = null;
   try { wake = await navigator.wakeLock?.request('screen'); } catch { /* nu e obligatoriu */ }
 
-  video.currentTime = 0;
-  await once(video, 'seeked');
+  const D = video.duration;
+  const total = finalDuration(removed, D);
+  const begin = nextKept(removed, 0, D);
+  if (begin === null || total < 0.3) throw new Error('Ai tăiat tot video-ul. Lasă măcar o bucată.');
+
+  const seekTo = async (t) => {
+    video.currentTime = t;
+    await once(video, 'seeked');
+    // asteptam sa se deseneze cadrul nou pe canvas inainte sa continuam inregistrarea
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  };
+  await seekTo(begin);
 
   const stream = canvas.captureStream(30);
   engine.recordStream.getAudioTracks().forEach((t) => stream.addTrack(t));
   const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 10_000_000, audioBitsPerSecond: 192_000 });
   const chunks = [];
   rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
-  let t0 = 0, t1 = 0;
+  let t0 = 0, t1 = 0, pausedMs = 0;
   rec.onstart = () => { t0 = performance.now(); };
   const stopped = new Promise((r) => (rec.onstop = () => { t1 = performance.now(); r(); }));
-  const finished = new Promise((r) => {
-    control.cancel = () => { control.cancelled = true; r(); };
-    video.addEventListener('ended', r, { once: true });
-  });
-  const tick = setInterval(() => onProgress(Math.min(1, video.currentTime / video.duration)), 200);
+
+  let done;
+  const finished = new Promise((r) => (done = r));
+  control.cancel = () => { control.cancelled = true; done(); };
+  video.addEventListener('ended', () => done(), { once: true });
+
+  // Urmarim video-ul: cand ajunge la o bucata taiata, oprim inregistrarea,
+  // sarim peste bucata si pornim din nou. La finalul ultimei bucati pastrate ne oprim.
+  let jumping = false, raf = 0;
+  const watch = async () => {
+    raf = requestAnimationFrame(watch);
+    if (jumping || control.cancelled) return;
+    const t = video.currentTime;
+    const r = removed.find(([a, b]) => t >= a - 0.03 && t < b);
+    if (!r) return;
+    const next = r[1] < D - 0.001 ? r[1] : null;
+    if (next === null) { done(); return; }
+    jumping = true;
+    const p0 = performance.now();
+    rec.pause();
+    video.pause();
+    await seekTo(next);
+    if (!control.cancelled) {
+      rec.resume();
+      pausedMs += performance.now() - p0;
+      await video.play();
+    }
+    jumping = false;
+  };
+  const tick = setInterval(() => onProgress(Math.min(1, toFinalTime(removed, video.currentTime) / total)), 200);
 
   engine.setMonitor(false);
   rec.start(500);
   try {
     await video.play();
+    raf = requestAnimationFrame(watch);
     await finished;
   } finally {
+    cancelAnimationFrame(raf);
     clearInterval(tick);
     video.pause();
     if (rec.state !== 'inactive') rec.stop();
@@ -78,7 +118,8 @@ export async function exportVideo({ canvas, video, engine, onProgress, control }
 
   const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
   const raw = new Blob(chunks, { type: mime.split(';')[0] });
-  const blob = await fixDuration(raw, t0 && t1 > t0 ? (t1 - t0) / 1000 : video.duration);
+  const measured = t0 && t1 > t0 ? (t1 - t0 - pausedMs) / 1000 : 0;
+  const blob = await fixDuration(raw, measured > 0 ? measured : total);
   return { blob, name: `razvan-${stamp()}.${ext}` };
 }
 

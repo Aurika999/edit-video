@@ -42,6 +42,9 @@ text și muzică peste video, apoi salvezi un fișier MP4 gata de urcat pe YouTu
    - **🎵 Muzică**: cauți muzică gratuită online (scrii un cuvânt în engleză, de ex. „energetic”,
      asculți cu ▶ și apeși „Folosește”) sau alegi un MP3 de pe calculator. Alegi apoi de la ce secundă pornește, volumul, repetarea,
      intrarea lină și stingerea la final. Tot aici reglezi volumul sunetului din video.
+   - **✂️ Taie**: alegi de unde până unde păstrezi clipul și scoți bucăți din mijloc
+     („De la” / „Până la”, cu butonul „acum”, apoi „Taie bucata”). Bucățile tăiate apar hașurate
+     pe bara de timp și sunt sărite la redare și la salvare. Video-ul original nu se schimbă.
 4. Tragi elementele cu mouse-ul. **Pătrățelul galben** din colț sau **rotița mouse-ului** le mărește.
 5. Din dreapta alegi **când apare / când dispare** (butonul „acum” ia secunda curentă) și **animația**.
 6. **💾 Salvează video**: video-ul rulează o dată de la cap la coadă și se descarcă

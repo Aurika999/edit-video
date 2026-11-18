@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { EMOJIS } from '../lib/constants';
 import MusicPanel from './MusicPanel';
+import CutPanel from './CutPanel';
 
 const TABS = [
   ['emoji', '😀 Emoji'],
   ['stickere', '🖼️ Stickere'],
   ['text', '🔤 Text'],
   ['muzica', '🎵 Muzică'],
+  ['taie', '✂️ Taie'],
 ];
 
 export default function ToolPanel(props) {
@@ -61,10 +63,15 @@ export default function ToolPanel(props) {
 
       {tab === 'muzica' && <MusicPanel {...props} />}
 
+      {tab === 'taie' && (
+        <CutPanel hasVideo={props.hasVideo} edit={props.edit} duration={props.duration} finalDuration={props.finalDuration}
+          time={props.time} onEditChange={props.onEditChange} onSeek={props.onSeek} />
+      )}
+
       <h2>Cum se folosește</h2>
       <p className="hint">
         1. Deschide un video.<br />
-        2. Mergi la momentul dorit și adaugă emoji, sticker, text sau muzică.<br />
+        2. Mergi la momentul dorit și adaugă emoji, sticker, text sau muzică. Din <b>✂️ Taie</b> scoți bucățile care nu-ți plac.<br />
         3. Trage elementele cu degetul sau cu mouse-ul. Colțul galben le mărește.
         Pe telefon le mărești și le rotești cu două degete; pe calculator, cu rotița mouse-ului.<br />
         4. La „Element selectat” alegi cât timp apar și animația.<br />

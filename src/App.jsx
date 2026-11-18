@@ -11,6 +11,7 @@ import { loadImage, renderFrame } from './lib/render';
 import { canShareFile, downloadBlob, exportVideo, isTouchDevice, shareFile } from './lib/exportVideo';
 import { isAudioFile, isImageFile, isVideoFile } from './lib/format';
 import { MAX_SIZE } from './lib/constants';
+import { emptyEdit, finalDuration, nextKept, removedAt, removedRanges, toFinalTime } from './lib/cuts';
 import './App.css';
 
 let nextId = 1;
@@ -28,6 +29,7 @@ export default function App() {
   const [library, setLibrary] = useState(BUILTIN_STICKERS);
   const [music, setMusic] = useState(null); // { name, duration, at, from, volume, loop, fadeIn, fadeOut }
   const [videoVolume, setVideoVolume] = useState(1);
+  const [edit, setEdit] = useState(null); // taieri: { start, end, cuts: [{ a, b }] }
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [exporting, setExporting] = useState(null); // { progress, control }
@@ -36,20 +38,31 @@ export default function App() {
 
   const duration = videoInfo?.duration || 10;
   const selected = overlays.find((o) => o.id === selectedId) ?? null;
+  const removed = useMemo(() => removedRanges(edit, duration), [edit, duration]);
+  const finalDur = useMemo(() => finalDuration(edit, duration), [edit, duration]);
 
   // Bucla de desenare citeste mereu starea cea mai noua din acest ref.
   const live = useRef({});
-  live.current = { overlays, selectedId, music, videoInfo, exporting: !!exporting };
+  live.current = { overlays, selectedId, music, videoInfo, exporting: !!exporting, removed, finalDur };
 
   useEffect(() => {
     let raf, lastT = -1;
     const loop = () => {
       const c = canvasRef.current, L = live.current;
       if (c && L.videoInfo) {
-        const t = video.currentTime;
+        let t = video.currentTime;
+        // La redare sarim peste bucatile taiate (la salvare se ocupa exportVideo de asta).
+        if (!video.paused && !L.exporting && L.removed.length && removedAt(L.removed, t)) {
+          const next = nextKept(L.removed, t, L.videoInfo.duration);
+          if (next === null) video.pause();
+          else { video.currentTime = next; t = next; }
+        }
         const sel = L.exporting ? null : L.overlays.find((o) => o.id === L.selectedId);
         renderFrame(c.getContext('2d'), { video, overlays: L.overlays, selected: sel, W: c.width, H: c.height, t, animate: !video.paused || L.exporting });
-        syncMusic(engine, musicEl, L.music, t, !video.paused && !video.ended, L.videoInfo.duration);
+        // Muzica merge dupa timpul din clipul FINAL, ca sa nu sara la taieturi.
+        const m = L.music && { ...L.music, at: toFinalTime(L.removed, L.music.at) };
+        const inCut = L.removed.length > 0 && !!removedAt(L.removed, t);
+        syncMusic(engine, musicEl, m, toFinalTime(L.removed, t), !video.paused && !video.ended && !inCut, L.finalDur);
         if (Math.abs(t - lastT) > 0.03) { lastT = t; setTime(t); }
       }
       raf = requestAnimationFrame(loop);
@@ -95,6 +108,7 @@ export default function App() {
       const d = Number.isFinite(video.duration) ? video.duration : 0;
       if (d <= 0) { alert('Video-ul pare gol sau stricat. Încearcă alt fișier.'); return; }
       video.currentTime = 0;
+      setEdit(emptyEdit(d));
       setVideoInfo({ name: file.name, W: Math.round((w * k) / 2) * 2, H: Math.round((h * k) / 2) * 2, duration: d });
       setOverlays((prev) => prev.map((o) => ({ ...o, end: Math.min(o.end, d), start: Math.min(o.start, Math.max(0, d - 0.1)) })));
     };
@@ -174,7 +188,12 @@ export default function App() {
     if (!live.current.videoInfo || live.current.exporting) return;
     engine.ensure();
     if (video.paused) {
-      if (video.ended) video.currentTime = 0;
+      const L = live.current, D = L.videoInfo.duration;
+      let t = video.ended ? 0 : video.currentTime;
+      // Daca esti intr-o bucata taiata (sau dupa final), pornim de la urmatoarea bucata pastrata.
+      let next = nextKept(L.removed, t, D);
+      if (next === null) next = nextKept(L.removed, 0, D) ?? 0;
+      if (next !== video.currentTime) video.currentTime = next;
       video.play();
     } else video.pause();
   }, [video, engine]);
@@ -201,7 +220,7 @@ export default function App() {
     setExporting({ progress: 0, control });
     try {
       const res = await exportVideo({
-        canvas: canvasRef.current, video, engine, control,
+        canvas: canvasRef.current, video, engine, control, removed,
         onProgress: (p) => setExporting((e) => e && { ...e, progress: p }),
       });
       if (res) {
@@ -246,6 +265,11 @@ export default function App() {
           onRemoveMusic={removeMusic}
           onMusicChange={(patch) => setMusic((m) => m && { ...m, ...patch })}
           onVideoVolume={setVideoVolume}
+          hasVideo={!!videoInfo}
+          edit={edit}
+          finalDuration={finalDur}
+          onEditChange={setEdit}
+          onSeek={seek}
         />
         <section className="center">
           <Stage
@@ -268,6 +292,8 @@ export default function App() {
             overlays={overlays}
             selectedId={selectedId}
             music={music}
+            removed={removed}
+            finalDuration={finalDur}
             onTogglePlay={togglePlay}
             onSeek={seek}
             onSelect={(o) => { setSelectedId(o.id); seek(Math.min(o.end, o.start + 0.4)); }}
